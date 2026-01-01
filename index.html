@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bmb YouTube</title>
+<style>
+  body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+    background-color: #0d0d0d;
+    color: #fff;
+  }
+  a { text-decoration: none; color: inherit; }
+
+  /* Logo */
+  .logo {
+    font-size: 3rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 10px 0;
+    background: linear-gradient(90deg, #ff0000, #ff4c4c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+    transition: transform 0.3s;
+  }
+  .logo:hover {
+    transform: scale(1.05);
+    text-shadow: 2px 2px 12px rgba(255,0,0,0.8);
+  }
+
+  /* User Info */
+  .user-info {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+    color: #ccc;
+  }
+  .user-info a {
+    color: #ff0000;
+    margin: 0 5px;
+  }
+
+  /* Search */
+  .search-container {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .search-container input {
+    padding: 10px;
+    width: 60%;
+    border-radius: 5px;
+    border: none;
+    font-size: 1rem;
+  }
+  .search-container button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #ff0000;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+  .search-container button:hover {
+    background-color: #ff4c4c;
+  }
+
+  /* Grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 0 20px 40px;
+  }
+
+  /* Video Card */
+  .video-card, .ad-card {
+    background: #1a1a1a;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+  }
+  .video-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 6px 20px rgba(255,0,0,0.5);
+  }
+  .video-card img {
+    width: 100%;
+    height: 140px;
+    object-fit: cover;
+    transition: transform 0.3s;
+  }
+  .video-card img:hover {
+    transform: scale(1.05);
+  }
+  .video-info {
+    padding: 10px;
+    flex: 1;
+  }
+  .video-info h3 {
+    margin: 5px 0;
+    font-size: 1rem;
+    line-height: 1.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .video-info h3:hover::after {
+    content: attr(data-fulltitle);
+    position: absolute;
+    background: #222;
+    color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+    z-index: 10;
+  }
+  .channel-info {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #ccc;
+    margin-bottom: 5px;
+  }
+  .channel-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .video-stats {
+    font-size: 0.8rem;
+    color: #777;
+    margin-bottom: 10px;
+  }
+  .download-btn {
+    display: block;
+    text-align: center;
+    padding: 8px;
+    background-color: #ff0000;
+    border-radius: 5px;
+    font-weight: bold;
+    margin: 0 10px 10px;
+  }
+  .download-btn:hover {
+    background-color: #ff4c4c;
+  }
+
+  /* Ads */
+  .ad-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+  }
+  .ad-card span { color: #ff0000; }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: #777;
+    font-size: 0.9rem;
+    border-top: 1px solid #333;
+  }
+
+  @media(max-width:600px){
+    .search-container input{ width: 80%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="logo">Bmb-Youtube</div>
+
+<div class="user-info">
+  Built by <strong>bmb tech</strong> | 
+  <a href="https://github.com/Dev-bmbtech" target="_blank">GitHub</a> | 
+  <a href="https://whatsapp.com/channel/0029VawO6hgF6sn7k3SuVU3z" target="_blank">WhatsApp</a>
+</div>
+
+<div class="search-container">
+  <input type="text" id="searchInput" placeholder="Search for videos...">
+  <button onclick="searchVideos()">Search</button>
+</div>
+
+<div class="grid" id="videoGrid">
+  <!-- Video cards populate here -->
+</div>
+
+<footer>
+  Powered by Bmb • API-driven YouTube Stream
+</footer>
+
+<script>
+const API_KEY = "AIzaSyB_IIgAFZkw9DuS6XXHUN_M7yD2Or0sY3w";
+const videoGrid = document.getElementById('videoGrid');
+
+function stringToColor(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) { hash = str.charCodeAt(i) + ((hash << 5) - hash); }
+  let color = '#';
+  for (let i = 0; i < 3; i++) { const value = (hash >> (i * 8)) & 0xFF; color += ("00" + value.toString(16)).slice(-2); }
+  return color;
+}
+
+function formatViews(views) {
+  if (!views) return "0 views";
+  const num = parseInt(views);
+  if (num >= 1e6) return (num/1e6).toFixed(1) + "M views";
+  if (num >= 1e3) return (num/1e3).toFixed(1) + "K views";
+  return num + " views";
+}
+
+function formatDate(dateStr) {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}
+
+async function searchVideos() {
+  const query = document.getElementById('searchInput').value || "Trending";
+  const searchUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=12&q=${encodeURIComponent(query)}&key=${API_KEY}`;
+
+  videoGrid.innerHTML = "<p style='color:#fff; text-align:center; grid-column:1/-1;'>Loading...</p>";
+
+  try {
+    const searchRes = await fetch(searchUrl);
+    const searchData = await searchRes.json();
+    const videoIds = searchData.items.map(v => v.id.videoId).join(',');
+
+    const statsUrl = `https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id=${videoIds}&key=${API_KEY}`;
+    const statsRes = await fetch(statsUrl);
+    const statsData = await statsRes.json();
+
+    displayVideosWithAds(statsData.items);
+  } catch(err) {
+    videoGrid.innerHTML = "<p style='color:red; text-align:center; grid-column:1/-1;'>Error fetching videos</p>";
+    console.error(err);
+  }
+}
+
+function displayVideosWithAds(videos) {
+  videoGrid.innerHTML = "";
+  videos.forEach((video, index) => {
+    // Insert a fake ad every 4 videos
+    if(index > 0 && index % 4 === 0){
+      const adCard = document.createElement('div');
+      adCard.className = 'ad-card';
+      adCard.innerHTML = `💰 <span>Sponsored Ad</span> 💰<br>Upgrade to bmb Premium!`;
+      videoGrid.appendChild(adCard);
+    }
+
+    const videoId = video.id;
+    const title = video.snippet.title;const channel = video.snippet.channelTitle;
+    const thumbnail = video.snippet.thumbnails.medium.url;
+    const published = formatDate(video.snippet.publishedAt);
+    const views = formatViews(video.statistics.viewCount);
+    const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    const card = document.createElement('div');
+    card.className = 'video-card';
+    card.innerHTML = `
+      <img src="${thumbnail}" alt="${title}">
+      <div class="video-info">
+        <h3 data-fulltitle="${title}">${title}</h3>
+        <div class="channel-info">
+          <span class="channel-avatar" style="background-color:${stringToColor(channel)}"></span>
+          ${channel}
+        </div>
+        <div class="video-stats">${views} • ${published}</div>
+        <a href="${videoUrl}" target="_blank" class="download-btn">Watch / Download</a>
+      </div>
+    `;
+    videoGrid.appendChild(card);
+  });
+}
+
+// Initial load
+searchVideos();
+</script>
+
+</body>
+</html>
